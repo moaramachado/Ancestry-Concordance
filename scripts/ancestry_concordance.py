@@ -1,4 +1,4 @@
-'''This module contains scripts for getting the validation and original files from S3, do some format changes. run concordance and generate a table with results.'''
+'''This module contains scripts for getting the validation and original files from S3, do some format changes, run concordance and generate a table with results.'''
 import boto3
 import os
 import re
