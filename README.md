@@ -18,7 +18,7 @@ This code is used to perform concordance analysis on ancestry data for equipment
 * **Intermediate Files:** CSV files with the percentage of the ancestries inferred.
 * **Result file:** Results of the concordance analysis for the validation and original samples in excel format.
 
-### How to run as a module from the am_tools:
+### How to run it as a module from the am_tools:
 ```
 am_tools ancestry germline-prod germline-test 8060256017 8060256248 /Users/moara.machado/Documents/Sema4/Projects/AM_tickets/AM-1271
 
