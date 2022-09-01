@@ -21,13 +21,14 @@ This code is used to perform concordance analysis on ancestry data for equipment
 
 ### How to run it as a module from the am_tools:
 ```
-am_tools ancestry germline-prod germline-test 8060256017 8060256248 /Documents/Results
+am_tools ancestry germline-prod germline-test ${original_sample_files} ${validaiton_sample_files} ${output_directory}
 
 ```
 
 ### How to run it using the input example files
 ```
-python3 scripts/ancestry_concordance.py pathway_of_the_input_folder
+python3 ${scripts}/ancestry_concordance.py ${pathway_of_the_input_directory}
 
-Ex: python3 scripts/ancestry_concordance.py /Projects/Ancestry-Concordance
+#Example:
+python3 scripts/ancestry_concordance.py Ancestry-Concordance/input
 ```
