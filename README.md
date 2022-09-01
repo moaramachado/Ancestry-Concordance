@@ -24,7 +24,7 @@ am_tools ancestry germline-prod germline-test 8060256017 8060256248 /Users/moara
 
 ```
 
-### How to run it using the input examples files given.
+### How to run it using the input example files
 ```
 python scripts/ancestry_concordance.py pathway_for_the_input_folder
 
