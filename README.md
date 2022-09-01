@@ -3,6 +3,7 @@ This code is used to perform concordance analysis on ancestry data for equipment
 
 ### Pre-requisites:
 * am_tools
+* [python3](https://www.python.org/downloads/)
 * [numpy](https://numpy.org/)
 * [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html)
 * [Pandas](https://pandas.pydata.org/)
@@ -20,13 +21,13 @@ This code is used to perform concordance analysis on ancestry data for equipment
 
 ### How to run it as a module from the am_tools:
 ```
-am_tools ancestry germline-prod germline-test 8060256017 8060256248 /Users/moara.machado/Documents/Projects/AM_tickets/AM-1271
+am_tools ancestry germline-prod germline-test 8060256017 8060256248 /Documents/Results
 
 ```
 
 ### How to run it using the input example files
 ```
-python scripts/ancestry_concordance.py pathway_for_the_input_folder
+python3 scripts/ancestry_concordance.py pathway_of_the_input_folder
 
-Ex: python scripts/ancestry_concordance.py /Users/moara.machado/Documents/Github_projects/Ancestry-Concordance
+Ex: python3 scripts/ancestry_concordance.py /Projects/Ancestry-Concordance
 ```
