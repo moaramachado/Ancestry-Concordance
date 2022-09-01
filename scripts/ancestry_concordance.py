@@ -1,11 +1,11 @@
-'''This module contains scripts for getting the validation and original files from S3, do some format changes, run concordance and generate a table with results.'''
+'''This module contains functions for getting the validation and original files from S3, do some format changes, run concordance and generate a table with results.'''
 import boto3
 import os
 import re
 import numpy as np
 import scipy.stats
 import subprocess
-
+import sys
 import pandas as pd
 import xlsxwriter
 import openpyxl
@@ -77,8 +77,6 @@ def get_demux_stats(
     try:
 
         result = client.list_objects(Bucket=bucket_name, Prefix=sub_path, Delimiter='/')
-
-    # print(result)
 
         #Finding the demux file and downloading it
         s3 = session.resource('s3')
@@ -228,7 +226,6 @@ def find_original_runs(
 
     session = boto3.Session(profile_name=prod_ac)
     client = session.client('s3')
-    # client = boto3.client('s3')
     s3 = session.resource('s3')
     bucket = s3.Bucket(bucket_name)
 
@@ -242,7 +239,6 @@ def find_original_runs(
     sub_path = str(Path(dir_path) / f) + "/"
     print(sub_path)
     print(output_path)
-    #sub_path = str(Path(dir_path) / v_batch) + '/'
 
     s3 = session.resource('s3')
     bucket = s3.Bucket(bucket_name)
@@ -258,10 +254,8 @@ def find_original_runs(
             medgis_id = id.split("_") #Selecting only the ID from the samples (removing extracting and repetition information)
             print(medgis_id[0])
             for object_summary in bucket.objects.filter(Prefix=sub_path):
-                #print(object_summary)
                 if (object_summary.key.endswith('R1_001.fastq.gz')):
                     ori_samples = object_summary.key
-                    #print(val_samples)
                     samples = ori_samples.split("/", 6)
                     if (samples[5].startswith(medgis_id[0])):
                         id_list.append(samples[5])
@@ -321,12 +315,12 @@ def generate_validation_csv_files(
         output_dir (PathLike): output directory path.
     """
 
-    sub_path = str(f'{output_path}/Ancestry_results/Validation_files')
+    sub_path = str(f'{output_path}/input/Validation_files')
     #print(sub_path)
     print("Output pathway:", output_path)
 
     input_directory = sub_path
-    out_directory = str(output_path) + '/' + 'Ancestry_results/Validation_files' + '/' + 'json2csv_validation'
+    out_directory = str(output_path) + '/' + 'input/Validation_files' + '/' + 'json2csv_validation'
 
     ##Part1: Create the output folder with the csv files for each sample
     if not os.path.exists(out_directory):
@@ -362,16 +356,16 @@ def generate_validation_csv_files(
     print()
 
     ##Part2: Combine all the csv files
-    sub_path2 = str(f'{output_path}/Ancestry_results/Validation_files/json2csv_validation')
+    sub_path2 = str(f'{output_path}/input/Validation_files/json2csv_validation')
     print("Validation files:", sub_path2)
-    print("Output file:", output_path)
+    print("Output path:", output_path)
 
     input_directory = sub_path2
-    out_directory = str(output_path) + '/' + 'Ancestry_results/Validation_files' + '/' + 'json2csv_validation'
+    out_directory = str(output_path) + '/' + 'input/Validation_files' + '/' + 'json2csv_validation'
 
 
 
-    # Input folder for the csv files that was generated in the Part1
+    # Input folder for the csv files that was generated in Part1
     source_files = sorted(Path(f'{out_directory}').glob('*.csv'))
 
     dataframes = []
@@ -383,7 +377,6 @@ def generate_validation_csv_files(
     df_all = pd.concat(dataframes, sort=True)
 
     ##Removing duplicated information
-    #data with index
     df_with_index = df_all.set_index("Unnamed: 0")
 
     #dropping passed values
@@ -392,7 +385,7 @@ def generate_validation_csv_files(
     #Extracting sample name
     df_with_index['source'] = df_with_index['source'].str.split('_A').str[0]
 
-    # Creating the columns for ancestry groups that are missing
+    #Creating the columns for ancestry groups that are missing
     cols = ['AFR', 'AMBIGUOUS', 'AMR', 'ASJ', 'EAS', 'FIN', 'NFE', 'SAS', 'UNASSIGNED']
     df_with_index = df_with_index.reindex(sorted(df.columns.union(cols, sort=False)), axis=1, fill_value='0.0')
     df_with_index = df_with_index.drop('Unnamed: 0', axis=1, inplace=False)
@@ -410,12 +403,12 @@ def generate_original_csv_files(
         output_dir (PathLike): output directory path.
     """
 
-    sub_path = str(f'{output_path}/Ancestry_results/Original_files')
+    sub_path = str(f'{output_path}/input/Original_files')
     print("Original files:", sub_path)
     print("Output path:", output_path)
 
     input_directory = sub_path
-    out_directory = str(output_path) + '/' + 'Ancestry_results/Original_files' + '/' + 'json2csv_original'
+    out_directory = str(output_path) + '/' + 'input/Original_files' + '/' + 'json2csv_original'
 
     ##Part1: Create the output folder with the csv files for each sample
     if not os.path.exists(out_directory):
@@ -450,12 +443,10 @@ def generate_original_csv_files(
     print()
 
     ##Part2: Combine all the csv files
-    sub_path2 = str(f'{output_path}/Ancestry_results/Original_files/json2csv_original')
-    #print(sub_path2)
-    #print(output_path)
+    sub_path2 = str(f'{output_path}/input/Original_files/json2csv_original')
 
     input_directory = sub_path2
-    out_directory = str(output_path) + '/' + 'Ancestry_results/Original_files' + '/' + 'json2csv_original'
+    out_directory = str(output_path) + '/' + 'input/Original_files' + '/' + 'json2csv_original'
 
 
     # Input folder for the csv files that was generated in the Part1
@@ -484,8 +475,7 @@ def generate_original_csv_files(
     df_with_index = df_with_index.reindex(sorted(df.columns.union(cols, sort=False)), axis=1, fill_value='0.0')
 
     df_with_index = df_with_index.drop('Unnamed: 0', axis=1, inplace=False)
-    # df_with_index
-    # df_with_index.head()
+
 
     #Printing results in a file
     df_with_index.to_csv(out_directory + '/' + 'combined_csv.tsv', index=False, sep="\t")
@@ -501,14 +491,10 @@ def run_concordance(
         output_dir (PathLike): output directory path.
     """
 
-    sub_path_validation = str(f'{output_path}/Ancestry_results/Validation_files/json2csv_validation')
-    sub_path_original = str(f'{output_path}/Ancestry_results/Original_files/json2csv_original')
-    print(sub_path_validation)
-    print(output_path)
+    sub_path_validation = str(f'{output_path}/input/Validation_files/json2csv_validation')
+    sub_path_original = str(f'{output_path}/input/Original_files/json2csv_original')
 
-    #input1_directory = sub_path_validation
-    #input2_directory = sub_path_original
-    out_file = str(f'{output_path}/Ancestry_results/ancestry.tsv')
+    out_file = str(f'{output_path}/input/ancestry.tsv')
 
     file_validation = str(f'{sub_path_validation}/combined_csv.tsv')
     file_original = str(f'{sub_path_original}/combined_csv.tsv')
@@ -521,7 +507,6 @@ def run_concordance(
     #df = pd.DataFrame(df1['source'].tolist())
 
     file_merged = df1.merge(df2, indicator=True, how='outer', on='id')
-    #print(file_merged)
 
     #Printing results in a file
     file_merged.to_csv(out_file, index=False, sep="\t")
@@ -537,12 +522,12 @@ def run_concordance(
     data = data.fillna(0)
 
     #Printing results in a file
-    data.to_csv(str(output_path) + '/' + 'Ancestry_results/all_ancestries.tsv', index=False, sep="\t")
+    data.to_csv(str(output_path) + '/' + 'input/all_ancestries.tsv', index=False, sep="\t")
 
     print('File all_ancestries.tsv is done!')
     print()
 
-    results = open(str(output_path) + '/' + 'Ancestry_results' + '/' + 'concordance.tsv', 'w')
+    results = open(str(output_path) + '/' + 'input' + '/' + 'concordance.tsv', 'w')
     results.write("id\tCorrelation(r,p-value)\n")
 
     #Calculating correlation
@@ -559,10 +544,10 @@ def run_concordance(
     results.close()
 
     #Merging the ancestry file with the correlation results file based on the id column
-    ancestry_file = str(f'{output_path}/Ancestry_results/all_ancestries.tsv')
+    ancestry_file = str(f'{output_path}/input/all_ancestries.tsv')
     ancestry = pd.read_csv(ancestry_file, delimiter='\t')
 
-    cor_file = str(f'{output_path}/Ancestry_results/concordance.tsv')
+    cor_file = str(f'{output_path}/input/concordance.tsv')
     correlation = pd.read_csv(cor_file, delimiter='\t')
 
     file2_merged = ancestry.merge(correlation, how='outer', on='id')
@@ -575,10 +560,10 @@ def run_concordance(
 
     #Inserting extra column to have space between validation and reference samples
     final_results.insert(10, "", " ")
-    final_results.to_excel(str(output_path) + '/' + 'Ancestry_results/' + 'ancestry_concordance.xlsx', index=False)
+    final_results.to_excel(str(output_path) + '/' + 'ancestry_concordance.xlsx', index=False)
 
     #Making changes in the format for the excel file with the results
-    file_name = (str(output_path) + '/' + 'Ancestry_results/' + 'ancestry_concordance.xlsx')
+    file_name = (str(output_path) + '/' + 'ancestry_concordance.xlsx')
 
     workbook = load_workbook(filename=file_name)
     sheet = workbook.active
@@ -619,7 +604,6 @@ def run_concordance(
                 cell.border = Border(top=thin, left=thin, right=thin, bottom=thin)
 
     rows = sheet.max_row
-    # print(rows)
     range_1 = "A1:V"
     range_2 = str(rows)
     range_defined = range_1 + range_2
@@ -627,14 +611,26 @@ def run_concordance(
     set_border(sheet, range_defined)
 
     #Final results saved in the ancestry_concordance.xlsx file
-    workbook.save(str(output_path) + '/' + "Ancestry_results/" + "ancestry_concordance.xlsx")
-    os.remove((str(output_path) + '/' + "Ancestry_results/" + "ancestry.tsv"))
+    workbook.save(str(output_path) + '/' + "ancestry_concordance.xlsx")
+    os.remove((str(output_path) + '/' + "input" + '/' + "ancestry.tsv"))
+
+    print("Done!")
+    print("ancestry_concordance.xlsx file was created")
 
 
-def run_ancestry(prod_ac, test_ac, validation, original, pathway, samples):
-    print(get_demux_stats(prod_ac, validation, pathway))
-    print(find_validation_runs(test_ac, validation, pathway, samples))
-    print(find_original_runs(prod_ac, original, pathway, samples))
-    print(generate_validation_csv_files(pathway))
-    print(generate_original_csv_files(pathway))
-    print(run_concordance(pathway))
+#def run_ancestry(prod_ac, test_ac, validation, original, pathway, samples):
+#    print(get_demux_stats(prod_ac, validation, pathway))
+#    print(find_validation_runs(test_ac, validation, pathway, samples))
+#    print(find_original_runs(prod_ac, original, pathway, samples))
+#    print(generate_validation_csv_files(pathway))
+#    print(generate_original_csv_files(pathway))
+#    print(run_concordance(pathway))
+
+
+def main():
+    generate_validation_csv_files(sys.argv[1])
+    generate_original_csv_files(sys.argv[1])
+    run_concordance(sys.argv[1])
+
+if __name__ == "__main__":
+    main()
