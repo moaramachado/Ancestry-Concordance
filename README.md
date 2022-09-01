@@ -2,7 +2,7 @@
 This code is used to perform concordance analysis on ancestry data for equipment/reagent verification.
 
 ### Pre-requisites:
-* am_tools
+* am_tools (internal tool)
 * [python3](https://www.python.org/downloads/)
 * [numpy](https://numpy.org/)
 * [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html)
