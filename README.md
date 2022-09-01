@@ -20,7 +20,7 @@ This code is used to perform concordance analysis on ancestry data for equipment
 
 ### How to run it as a module from the am_tools:
 ```
-am_tools ancestry germline-prod germline-test 8060256017 8060256248 /Users/moara.machado/Documents/Sema4/Projects/AM_tickets/AM-1271
+am_tools ancestry germline-prod germline-test 8060256017 8060256248 /Users/moara.machado/Documents/Projects/AM_tickets/AM-1271
 
 ```
 
